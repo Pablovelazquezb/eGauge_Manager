@@ -5,9 +5,10 @@ from datetime import datetime
 from database.connection import validate_db_credentials, db
 from database.models import crear_tabla_clientes
 from views.clientes import render_gestion_clientes
-from views.descarga import render_descarga_masiva
+from views.descarga import render_descarga_individual  # Cambio aquí
 from views.tablas import render_ver_tablas
 from views.admin import render_admin_clientes
+from views.recibos import render_generador_recibos
 
 # Configuración de la página
 st.set_page_config(
@@ -22,7 +23,7 @@ def main():
     
     # Título principal
     st.title("⚡ eGauge Data Manager")
-    st.markdown("**Sistema completo de gestión y descarga masiva de medidores eGauge**")
+    st.markdown("**Sistema completo de gestión y descarga individual de medidores eGauge**")
     
     # Validar credenciales de base de datos
     validate_db_credentials()
@@ -34,11 +35,12 @@ def main():
     mostrar_estado_conexion()
     
     # Crear tabs principales
-    tab1, tab2, tab3, tab4 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5 = st.tabs([
         "👥 Gestión de Clientes", 
-        "📊 Descarga Masiva", 
+        "📊 Descarga Individual",  # Cambio aquí
         "🗄️ Ver Tablas", 
-        "📋 Administrar Clientes"
+        "📋 Administrar Clientes",
+        "🧾 Generar Recibos"
     ])
     
     # Renderizar cada tab
@@ -46,13 +48,16 @@ def main():
         render_gestion_clientes()
     
     with tab2:
-        render_descarga_masiva()
+        render_descarga_individual()  # Cambio aquí
     
     with tab3:
         render_ver_tablas()
     
     with tab4:
         render_admin_clientes()
+    
+    with tab5:
+        render_generador_recibos()
     
     # Footer simplificado
     mostrar_footer()
@@ -79,7 +84,7 @@ def mostrar_footer():
     st.markdown("---")
     st.markdown(
         "<div style='text-align: center; color: #666;'>"
-        "<b>eGauge Data Manager</b> - Sistema profesional de gestión y descarga masiva"
+        "<b>eGauge Data Manager</b> - Sistema profesional de gestión y descarga individual"
         "</div>", 
         unsafe_allow_html=True
     )
