@@ -167,6 +167,13 @@ def _mostrar_calculadora_simple(datos):
     with col3:
         precio_distribucion = st.number_input("Precio Distribución ($/kW)", value=100.00, step=0.01)
         cargo_fijo = st.number_input("Cargo Fijo ($)", value=563.57, step=0.01)
+    with col4:
+        # Servicio de Alumbrado Público
+        incluir_dap = st.checkbox("Incluir Servicio Alumbrado Público", value=False)
+        if incluir_dap:
+            porcentaje_dap = st.number_input("% Alumbrado Público", value=2.0, step=0.1, min_value=0.0, max_value=10.0)
+        else:
+            porcentaje_dap = 0.0
     
     # CÁLCULOS
     costo_base = kwh_base * precio_base
@@ -178,23 +185,41 @@ def _mostrar_calculadora_simple(datos):
     # TOTALES COMO SOLICITASTE
     energia = costo_base + costo_intermedio + costo_punta + costo_capacidad + costo_distribucion
     subtotal = energia + cargo_fijo
-    iva = subtotal * 0.16
-    total = subtotal + iva
+    
+    # Servicio de Alumbrado Público (DAP)
+    dap = subtotal * (porcentaje_dap / 100) if incluir_dap else 0
+    subtotal_con_dap = subtotal + dap
+    
+    iva = subtotal_con_dap * 0.16
+    total = subtotal_con_dap + iva
     
     st.divider()
     
     # PREVIEW FINAL
     st.subheader("🧾 Preview")
     
-    col1, col2, col3, col4 = st.columns(4)
-    with col1:
-        st.metric("ENERGÍA", f"${energia:,.2f}")
-    with col2:
-        st.metric("SUBTOTAL", f"${subtotal:,.2f}")
-    with col3:
-        st.metric("IVA (16%)", f"${iva:,.2f}")
-    with col4:
-        st.metric("TOTAL", f"${total:,.2f}")
+    if incluir_dap:
+        col1, col2, col3, col4, col5 = st.columns(5)
+        with col1:
+            st.metric("ENERGÍA", f"${energia:,.2f}")
+        with col2:
+            st.metric("SUBTOTAL", f"${subtotal:,.2f}")
+        with col3:
+            st.metric(f"DAP ({porcentaje_dap}%)", f"${dap:,.2f}")
+        with col4:
+            st.metric("IVA (16%)", f"${iva:,.2f}")
+        with col5:
+            st.metric("TOTAL", f"${total:,.2f}")
+    else:
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.metric("ENERGÍA", f"${energia:,.2f}")
+        with col2:
+            st.metric("SUBTOTAL", f"${subtotal:,.2f}")
+        with col3:
+            st.metric("IVA (16%)", f"${iva:,.2f}")
+        with col4:
+            st.metric("TOTAL", f"${total:,.2f}")
     
     # Desglose simple
     st.write("**Desglose:**")
@@ -204,3 +229,41 @@ def _mostrar_calculadora_simple(datos):
     st.write(f"• Capacidad: {max(max_base, max_intermedio, max_punta):,.1f} kW × ${precio_capacidad:.2f} = ${costo_capacidad:,.2f}")
     st.write(f"• Distribución: {demanda_facturable:,.1f} kW × ${precio_distribucion:.2f} = ${costo_distribucion:,.2f}")
     st.write(f"• Cargo Fijo: ${cargo_fijo:,.2f}")
+    st.write(f"**• SUBTOTAL: ${subtotal:,.2f}**")
+    
+    if incluir_dap:
+        st.write(f"• Servicio Alumbrado Público ({porcentaje_dap}%): ${subtotal:,.2f} × {porcentaje_dap/100:.3f} = ${dap:,.2f}")
+        st.write(f"**• SUBTOTAL + DAP: ${subtotal_con_dap:,.2f}**")
+    
+    st.write(f"• IVA (16%): ${subtotal_con_dap:,.2f} × 0.16 = ${iva:,.2f}")
+    st.write(f"**🔥 TOTAL FINAL: ${total:,.2f}**")
+    
+    # Guardar datos en session state para el generador de recibos
+    st.session_state.datos_calculados = {
+        'kwh_base': kwh_base,
+        'kwh_intermedio': kwh_intermedio,
+        'kwh_punta': kwh_punta,
+        'max_base': max_base,
+        'max_intermedio': max_intermedio,
+        'max_punta': max_punta,
+        'costo_base': costo_base,
+        'costo_intermedio': costo_intermedio,
+        'costo_punta': costo_punta,
+        'costo_capacidad': costo_capacidad,
+        'costo_distribucion': costo_distribucion,
+        'cargo_fijo': cargo_fijo,
+        'energia': energia,
+        'subtotal': subtotal,
+        'subtotal_con_dap': subtotal_con_dap,
+        'dap': dap if incluir_dap else 0,
+        'iva': iva,
+        'total': total,
+        'demanda_facturable': demanda_facturable,
+        'incluir_dap': incluir_dap,
+        'porcentaje_dap': porcentaje_dap if incluir_dap else 0
+    }
+    
+    # Botón para ir al generador de recibos
+    if st.button("📄 Crear Recibo CFE", use_container_width=True, type="primary"):
+        st.success("✅ Datos guardados. Ve a la pestaña 'Generador Recibos CFE' para crear el recibo visual")
+        st.balloons()

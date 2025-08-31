@@ -5,17 +5,18 @@ from datetime import datetime
 from database.connection import validate_db_credentials, db
 from database.models import crear_tabla_clientes
 from views.clientes import render_gestion_clientes
-from views.descarga import render_descarga_individual  # Cambio aquí
+from views.descarga import render_descarga_individual
 from views.tablas import render_ver_tablas
 from views.admin import render_admin_clientes
 from views.recibos import render_generador_recibos
+from views.generador_recibo_cfe import render_generador_recibo_cfe
 
 # Configuración de la página
 st.set_page_config(
     page_title="eGauge Data Manager",
     page_icon="⚡",
     layout="wide",
-    initial_sidebar_state="collapsed"  # Sidebar colapsado por defecto
+    initial_sidebar_state="collapsed"
 )
 
 def main():
@@ -35,12 +36,13 @@ def main():
     mostrar_estado_conexion()
     
     # Crear tabs principales
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
         "👥 Gestión de Clientes", 
-        "📊 Descarga Individual",  # Cambio aquí
+        "📊 Descarga Individual",
         "🗄️ Ver Tablas", 
         "📋 Administrar Clientes",
-        "🧾 Generar Recibos"
+        "🧾 Calculadora CFE",
+        "📄 Generador Recibos CFE"
     ])
     
     # Renderizar cada tab
@@ -48,7 +50,7 @@ def main():
         render_gestion_clientes()
     
     with tab2:
-        render_descarga_individual()  # Cambio aquí
+        render_descarga_individual()
     
     with tab3:
         render_ver_tablas()
@@ -58,6 +60,9 @@ def main():
     
     with tab5:
         render_generador_recibos()
+    
+    with tab6:
+        render_generador_recibo_cfe()
     
     # Footer simplificado
     mostrar_footer()
